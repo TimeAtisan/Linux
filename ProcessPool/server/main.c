@@ -22,7 +22,7 @@ int main(int argc,char *argv[])
   epollAdd(epfd,sockfd);
 
   // 监听每个子进程的pipesockfd
-  for (size_t i = 0; i < workerNum; i++)
+  for (size_t i = 0; i < workerNum; ++i)
   {
     epollAdd(epfd,workerArr[i].pipesockfd);
   }

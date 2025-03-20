@@ -38,13 +38,23 @@ int transFile(int netfd)
   memcpy(train.data,filename,train.length);
 
   // 发送小火车  头长度+车厢长度
-  send(netfd,&train,sizeof(train.length)+train.length,0);
+  send(netfd,&train,sizeof(train.length)+train.length,MSG_NOSIGNAL);
 
   int fd = open(filename,O_RDWR);
-  // 针对小文件
-  ssize_t sret = read(fd,train.data,sizeof(train.data));
-  train.length = sret;
-  send(netfd,&train,sizeof(train.length)+train.length,0);
+  while (1)
+  {
+    // 针对大文件
+    ssize_t sret = read(fd,train.data,sizeof(train.data));
+    train.length = sret;
+    ssize_t sret1 = send(netfd,&train,sizeof(train.length)+train.length,MSG_NOSIGNAL);
+    if(sret == 0 || sret1 == -1)  // sret1 == -1提前终止避免僵尸进程
+    {
+      break;
+    }
+    sleep(1);
+  }
+  close(fd);
+  
 
   return 0;
 }
