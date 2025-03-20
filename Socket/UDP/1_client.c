@@ -13,16 +13,44 @@ int main(int argc,char *argv[])
 
   // 第一次必须是客户端向服务端发信息，因为服务器不知道客户端IP
   sendto(sockfd,"hello YH!",sizeof("hello YH!"),0,(struct sockaddr*)&serverAddr,sizeof(serverAddr));
-printf("-----------1---\n");
+
   char buf[4096] = {0};
-  sleep(1);
-  recvfrom(sockfd,buf,4096,0,NULL,NULL);
-  printf("buf = %s\n",buf);
+  fd_set rdset;
+  while (1)
+  {
+    FD_ZERO(&rdset);
+    FD_SET(STDIN_FILENO,&rdset);
+    FD_SET(sockfd,&rdset);
+    select(sockfd+1,&rdset,NULL,NULL,NULL);  // 断线重连则需要每次更新客户端的消息
 
-  sleep(1);
-  recvfrom(sockfd,buf,4096,0,NULL,NULL);
+    if(FD_ISSET(sockfd,&rdset))
+    {
+      bzero(buf,4096);
+      ssize_t sret = recvfrom(sockfd,buf,4096,0,NULL,NULL);
 
+      if(sret == 0)
+      {
+        break;
+      }
 
-  printf("buf = %s\n",buf);
+      printf("sret = %ld,buf = %s\n",sret,buf);
+    }
+
+    if(FD_ISSET(STDIN_FILENO,&rdset))
+    {
+      bzero(buf,sizeof(buf));
+      ssize_t sret = read(STDIN_FILENO,buf,4096);
+
+      if(sret == 0)  // 按下了ctrl+D（因为不会读到0个字节，除非断开连接，因为read读阻塞）
+      {
+        // 按下了EOF，发送0长度包给对面
+        sendto(sockfd,buf,0,0,
+          (struct sockaddr*)&serverAddr,sizeof(serverAddr));
+      }
+
+      sendto(sockfd,buf,sret,0,
+      (struct sockaddr*)&serverAddr,sizeof(serverAddr));
+    }
+  }
   return 0;
 }
