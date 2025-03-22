@@ -118,7 +118,7 @@ int transFile(int netfd)
 /* 
   之前使用小火车是因为，不知道文件长度，不能一次发送所有文件
 */
-typedef struct train_s
+/* typedef struct train_s
 {
   int length; // 4字节对齐 火车头 |---> 如果是8字节对齐则改long
   char data[1000]; // 火车车厢，// 可能存在对齐问题
@@ -178,6 +178,53 @@ int transFile(int netfd)
   train.length = 0;
   send(netfd,&train.length,sizeof(train.length),MSG_NOSIGNAL);
   munmap(p,statbuf.st_size);
+  
+  close(fd);
+
+  return 0;
+} */
+
+// 5.0使用大货车
+typedef struct train_s
+{
+  int length; // 4字节对齐 火车头 |---> 如果是8字节对齐则改long
+  char data[1000]; // 火车车厢，// 可能存在对齐问题
+  // 1000 不是火车车厢的实际大小，是上限。
+  // char 数组不是表示一个字符串，他可以保存任何数据  // char占用1一个字节，方便调节实际大小
+}train_t;
+
+int transFile(int netfd)
+{
+  train_t train;
+  char filename[] = "file1";
+  // 组装小火车
+  train.length = strlen(filename);
+  memcpy(train.data,filename,train.length);
+
+  // 发送小火车  头长度+车厢长度
+  send(netfd,&train,sizeof(train.length)+train.length,MSG_NOSIGNAL);
+
+
+  // 发送文件总长度
+  struct stat statbuf;
+  int fd = open(filename,O_RDWR); // 1.open 必须用O_RDWR
+  fstat(fd,&statbuf);
+
+  // 发送文件的总长度（操作尽量用二进制，文本容易出问题）
+  train.length = sizeof(off_t);
+  memcpy(train.data,&statbuf.st_size,train.length);
+  send(netfd,&train,sizeof(train.length)+train.length,MSG_NOSIGNAL);
+
+  // 2.使用mmap
+  /* char *p = (char *)mmap(NULL,statbuf.st_size,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+
+  ERROR_CHECK(p,MAP_FAILED,"mmap");
+
+  send(netfd,p,statbuf.st_size,MSG_NOSIGNAL);
+
+  munmap(p,statbuf.st_size); */
+
+  sendfile(netfd,fd,NULL,statbuf.st_size);
   
   close(fd);
 

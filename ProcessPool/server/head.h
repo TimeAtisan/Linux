@@ -31,8 +31,8 @@ int epollAdd(int epfd,int fd);
 int epollDel(int epfd,int fd);
 
 // 发送netfd给子进程
-int sendfd(int sockfd,int fdtosend);
-int recvfd(int sockfd,int *pfdtorecv);
+int sendfd(int sockfd,int fdtosend,int exitFlag);
+int recvfd(int sockfd,int *pfdtorecv,int *pexitFlag);
 
 // 业务代码
 int transFile(int netfd);

@@ -29,7 +29,16 @@ int workLoop(int sockfd)
   while  (1)
   {
     int netfd;
-    recvfd(sockfd,&netfd); // 接收任务
+    int exitFlag;
+    recvfd(sockfd,&netfd,&exitFlag); // 接收任务
+
+    if (exitFlag == 1)
+    {
+      printf("I am going exit!\n");
+      exit(0);
+    }
+    
+
     printf("begin work!\n"); // 执行任务
     transFile(netfd);
     printf("work over!\n");
