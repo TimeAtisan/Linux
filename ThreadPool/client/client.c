@@ -532,6 +532,6 @@ int main(int argc,char *argv[])
   
   recvFile(sockfd);
   close(sockfd);
-  sleep(20);
+  sleep(30);
   return 0;
 }

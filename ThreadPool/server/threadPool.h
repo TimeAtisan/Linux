@@ -19,6 +19,9 @@ typedef struct threadPool_s
   // 条件变量
   pthread_cond_t cond;
 
+  // 退出标志位
+  int exitFlag; // 0表示不退出，1表示退出
+
 }threadPool_t;
 
 
@@ -30,5 +33,8 @@ int tcpInit(const char *ip,const char *port,int *psockfd);
 
 int epollAdd(int epfd,int fd);
 int epollDel(int epfd,int fd);
+
+// 业务代码
+int transFile(int netfd);
 
 #endif
