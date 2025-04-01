@@ -81,11 +81,10 @@ int main(int argc,char *argv[])
         threadPool.exitFlag = 1;
         pthread_cond_broadcast(&threadPool.cond);
         pthread_mutex_unlock(&threadPool.mutex);
-        sleep(2);
-        for (size_t j = 0; j < threadPool.tidArr.workerNum; j++)
+        for (size_t j = 0; j < threadPool.tidArr.workerNum; ++j)
         {
-          printf("[thread %ld has exit!]\n",threadPool.tidArr.arr[i]);
-          pthread_join(threadPool.tidArr.arr[i],NULL);
+          printf("[thread %ld has exit!]\n",threadPool.tidArr.arr[j]);
+          pthread_join(threadPool.tidArr.arr[j],NULL);
         }
         printf("main thread is going to exit!\n");
         exit(0);

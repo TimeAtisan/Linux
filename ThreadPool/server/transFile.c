@@ -223,7 +223,7 @@ int transFile(int netfd)
   send(netfd,p,statbuf.st_size,MSG_NOSIGNAL);
 
   munmap(p,statbuf.st_size); */
-  sleep(10);
+
   // printf("------------7-----------------\n\n");
 
   sendfile(netfd,fd,NULL,statbuf.st_size);

@@ -37,8 +37,9 @@ void* threadFunc(void *args)
 
     if(pthreadPool->exitFlag == 1)
     {
-      printf("\nI am child ,I am going to exit\n");
+      printf("\n[I am child %ld,I am going to exit!]\n",pthread_self());
       pthread_mutex_unlock(&pthreadPool->mutex);
+      pthread_exit(NULL);
     }
 
     int netfd = pthreadPool->taskQueue.pFront->netfd;
